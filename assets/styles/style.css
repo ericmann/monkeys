@@ -2,6 +2,10 @@ body {
 	background-color: #f7f5fa;
 }
 
+textarea {
+	width: 100%;
+}
+
 .monkey {
 	margin: 50px 50px 0 0;
 }

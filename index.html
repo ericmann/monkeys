@@ -5,7 +5,9 @@
 
 	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css"/>
-	<link rel="stylesheet" href="assets/style.css"/>
+	<link rel="stylesheet" href="assets/styles/style.css"/>
+
+	<script type="text/javascript" src="bower_components/jquery/dist/jquery.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -25,10 +27,10 @@
 		<input type="checkbox" id="useworkers" name="useworkers" />
 		<span id="status"></span>
 		<div>
-			<label for="generation">Generation:</label><span id="generation"></span>
+			<label for="generation">Generation:</label> <span id="generation"></span>
 		</div>
 		<div>
-			<label for="gps">Generations / sec:</label><span id="gps"></span>
+			<label for="gps">Generations / sec:</label> <span id="gps"></span>
 		</div>
 		<div>
 			<small>Based heavily on <a href="http://www.hanselman.com/blog/SolvingTheShakespeareMillionMonkeysProblemInRealtimeWithParallelismAndSignalR.aspx">the ASP.Net SignalR demo by Scott Hanselman and Paul Batum</a>.</small>
@@ -36,12 +38,13 @@
 	</div>
 
 	<div id="sidebar" class="col-md-4">
-		<img src="assets/HamletMonkey.jpg" alt="monkey" class="monkey" />
+		<img src="assets/images/HamletMonkey.jpg" alt="monkey" class="monkey" />
 	</div>
 
 	<footer class="footer navbar-fixed-bottom">
 		<small>&copy; Copyright 2014 <a href="http://eamann.com">Eric Mann</a></small>
 	</footer>
 </div>
+<script type="text/javascript" src="assets/scripts/main.js"></script>
 </body>
 </html>
