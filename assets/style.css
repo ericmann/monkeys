@@ -2,6 +2,10 @@ body {
 	background-color: #f7f5fa;
 }
 
+.monkey {
+	margin: 50px 50px 0 0;
+}
+
 .footer {
 	text-align: center;
 }

@@ -9,9 +9,36 @@
 </head>
 <body>
 <div id="wrap">
-	<div id="main" class="container clear-top">
-
+	<div id="main" class="container clear-top col-md-7 col-md-offset-1">
+		<h2>Monkeys in the Machine</h2>
+		<div>
+			<div>Target:</div>
+			<textarea id="targettext" name="targettext" rows="6" cols="45"></textarea>
+		</div>
+		<div>
+			<div>Current:</div>
+			<textarea id="currenttext" name="currenttext" rows="6" cols="45"></textarea>
+		</div>
+		<input type="button" id="startbutton" value="Queue" />
+		<input type="button" id="cancelbutton" value="Cancel All" disabled="disabled" />
+		<label for="useworkers">Use WebWorkers</label>
+		<input type="checkbox" id="useworkers" name="useworkers" />
+		<span id="status"></span>
+		<div>
+			<label for="generation">Generation:</label><span id="generation"></span>
+		</div>
+		<div>
+			<label for="gps">Generations / sec:</label><span id="gps"></span>
+		</div>
+		<div>
+			<small>Based heavily on <a href="http://www.hanselman.com/blog/SolvingTheShakespeareMillionMonkeysProblemInRealtimeWithParallelismAndSignalR.aspx">the ASP.Net SignalR demo by Scott Hanselman and Paul Batum</a>.</small>
+		</div>
 	</div>
+
+	<div id="sidebar" class="col-md-4">
+		<img src="assets/HamletMonkey.jpg" alt="monkey" class="monkey" />
+	</div>
+
 	<footer class="footer navbar-fixed-bottom">
 		<small>&copy; Copyright 2014 <a href="http://eamann.com">Eric Mann</a></small>
 	</footer>
