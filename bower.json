@@ -1,0 +1,8 @@
+{
+	"name": "machine_monkeys",
+	"version": "1.0.0",
+	"dependencies": {
+		"bootstrap": "~3.0.0",
+		"modernizr": "~2.7.0"
+	}
+}
