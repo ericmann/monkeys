@@ -8,11 +8,12 @@
 	 * @constructor
 	 */
 	function ZooKeeper() {
-		var _runner,
+		var _workers = [],
 			_generation = 0,
 			_rate = 0,
 			_start = 0,
 			_population = [],
+			_population_number = 0,
 			_validChars = [];
 
 		// Initialize valid characters
@@ -33,6 +34,8 @@
 				count = 1000;
 			}
 
+			_population_number = count;
+
 			// Create a random generation of monkeys over which we'll iterate
 			for ( var i = 0; i < count; i ++ ) {
 				var member = createRandomGenome( text );
@@ -52,8 +55,12 @@
 			// Set up our start time
 			_start = Math.floor( Date.now() / 1000 );
 
-			// Create our task runner
-			_runner = new window.Worker( 'assets/scripts/taskrunner.js' );
+			// Set up workers if they don't exist
+			if ( _workers.length === 0 ) {
+				for ( var i = 0; i < 3; i++ ) {
+					_workers.push( new Worker( 'assets/scripts/worker.js' ) );
+				}
+			}
 
 			// Start running steps
 			_next( deferred );
@@ -70,10 +77,10 @@
 		function _next( deferred ) {
 			// Run a step and wait until it's complete.
 			_step().done( function( best ) {
-				if ( text === best ) {
-					deferred.resolveWith( [ { 'generation': _generation, 'generation_rate': _rate, 'best': best } ] );
+				if ( 0 === best.fitness ) {
+					deferred.resolveWith( { 'generation': _generation, 'generation_rate': _rate, 'best': best.text } );
 				} else {
-					deferred.notifyWith( [ { 'generation': _generation, 'generation_rate': _rate, 'best': best } ] );
+					deferred.notifyWith( { 'generation': _generation, 'generation_rate': _rate, 'best': best.text } );
 
 					// Iterate
 					_generation += 1;
@@ -87,27 +94,47 @@
 		 * Perform an iteration (replace the _population with a procedurally-generated one.
 		 */
 		function _step() {
-			var deferred = $.Deferred();
+			var deferred = $.Deferred(),
+				promises = [],
+				initial = _front_runners(),
+				_descendants = [];
 
-			// Clear existing message callbacks for the task runner
-			_runner.onmessage = undefined;
+			for ( var i = 0, l = _workers.length; i < l; i++ ) {
+				var worker_promise = $.Deferred();
 
-			// Tell our task runner to perform a single run
-			_runner.postMessage( window.JSON.stringify( { 'method': 'run', 'population': _front_runners(), 'count': _population.length } ) );
+				// Set the worker's onmessage handler manually to prevent any overlap
+				_workers[ i ].onmessage = ( function( worker, promise, initial ) {
+					return function( event ) {
+						var data = window.JSON.parse( event.data );
 
-			// Set up a callback for our task runner
-			_runner.onmessage = function( event ) {
-				var data = window.JSON.parse( event.data );
+						// Combine our arrays to make sure the the new population is built up out of generated children
+						_descendants = _descendants.concat( data.children );
+
+						if ( _descendants.length >= _population.length ) {
+							promise.resolve();
+						} else {
+							worker.postMessage( window.JSON.stringify( { 'method': 'spawn', 'parents': initial, 'target': _population[0].targetText } ) );
+						}
+					}
+				} )( _workers[i], worker_promise, initial );
+
+				// Kick off an initial iteration for the worker.
+				_workers[ i ].postMessage( JSON.stringify( { 'method': 'spawn', 'parents': initial, 'target': _population[0].targetText } ) );
+
+				promises.push( worker_promise.promise() );
+			}
+
+			// After the workers have all completed their tasks, complete the step itself
+			$.when.apply( $, promises ).then( function() {
+				_descendants.sort( _genome_comparator );
+				_descendants = _descendants.slice( 0, _population_number );
 
 				// Update the population to be the descendant generation
-				_population = data.descendants;
-
-				// Sort the descendants
-				data.descendants.sort( _genome_comparator );
+				_population = _descendants;
 
 				// Resolve our step with the best child out of the descendant array
-				deferred.resolve( [ data.descendants.shift() ] );
-			};
+				deferred.resolve( _descendants.shift() );
+			} );
 
 			// Return a promise so we can bind event handlers
 			return deferred.promise();
@@ -122,8 +149,6 @@
 		 */
 		function _front_runners() {
 			var length = Math.ceil( _population.length / 10 );
-
-			_population.sort( _genome_comparator );
 
 			return _population.slice( 0, length );
 		}
@@ -149,12 +174,15 @@
 		 * Clear the task runner in its entirety.
 		 */
 		function cleanup() {
-			// Tell the task runner to clean things up
-			_runner.postMessage( window.JSON.stringify( { method: 'cleanup' } ) );
-			_runner = null;
+			// Instruct our workers to exit
+			for ( var i = 0, l = workers.length; i < l; i++ ) {
+				workers[ i ].postMessage( JSON.stringify( { 'method': 'cleanup' } ) );
+			}
 
 			// Reset the population
+			workers = [];
 			_population = [];
+			_descendants = [];
 			_generation = 0;
 			_rate = 0;
 			_start = 0;

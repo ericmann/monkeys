@@ -27,7 +27,7 @@ onmessage = function ( event ) {
 			break;
 		case 'spawn':
 			// Collect our children
-			var children = create_children( data.parents );
+			var children = create_children( data.parents, data.target );
 
 			// Send our children back to the task runner
 			postMessage( JSON.stringify( { 'children': children } ) );
@@ -38,28 +38,29 @@ onmessage = function ( event ) {
 /**
  * Create a pair of child strings given an initial array of high-fitness candidates.
  *
- * @param {Array} initial
+ * @param {Array}  initial
+ * @param {String} target
  */
-function create_children( initial ) {
+function create_children( initial, target ) {
 	var children = [];
 
-	for ( i = 0; i < l; i ++ ) {
+	for ( i = 0, l = initial.length; i < l; i ++ ) {
 		maxFitness = Math.max( maxFitness, initial[i].fitness );
 	}
 	maxFitness += 1;
 
-	for ( i = 0; i < l; i ++ ) {
+	for ( i = 0, l = initial.length; i < l; i ++ ) {
 		sumOfMaxMinusFitness += ( maxFitness - initial[i].fitness );
 	}
 
 	// Expose the initial population so we can reference it elsewhere
 	// Be sure to randomize the array since it was given to us ordered and we value "natural" election
 	population = shuffle( initial );
+	population = initial;
 
 	// Find two high-quality parents at random
 	var father = random_parent(),
-		mother = random_parent(),
-		target = father.targetText;
+		mother = random_parent();
 
 	// Create a mutation via crossover
 	if ( Math.random() < probabilities.cross_over ) {
@@ -89,6 +90,12 @@ function create_children( initial ) {
  * @returns {Shakespeare.Genome}
  */
 function random_parent() {
+	var random_index = Math.floor( Math.random() * population.length );
+
+	return population[ random_index ];
+
+	//return population[ Math.floor( Math.random() * population.length ) ];
+
 	// Initialize a random starting point
 	var val = Math.random() * sumOfMaxMinusFitness;
 	for ( var i = 0, l = population.length; i < l; i ++ ) {
