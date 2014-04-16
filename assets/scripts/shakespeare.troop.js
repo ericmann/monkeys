@@ -20,16 +20,24 @@
 		function process() {
 			var deferred = $.Deferred();
 
-			do {
-				var monkey;
+			/**
+			 * Build a task runner that fetches a monkey and makes it dance.
+			 *
+			 * @param job
+			 * @returns {$.Deferred}
+			 */
+			var task = function( job ) {
+				var deferred_task = $.Deferred(),
+					zoo_keeper = get_monkey();
 
-				if ( false === ( monkey = get_monkey() ) ) {
-					continue;
-				}
+				zoo_keeper.done( function( monkey ) {
+					monkey.postMessage( job ).done( function() { deferred_task.resolve(); } );
+				} );
 
-				// Come monkey, it's time to dance!
-				monkey.postMessage( jobs.pop() );
-			} while( jobs.length > 0 );
+				return deferred_task.promise();
+			};
+
+			// Wire up a task runner for every job registered in the queue.
 
 			return deferred.promise();
 		}
@@ -37,16 +45,35 @@
 		/**
 		 * Get the next available monkey.
 		 *
-		 * @returns {Monkey|bool} False if no monkeys available.
+		 * @returns {$.Deferred}
 		 */
 		function get_monkey() {
-			for ( var i = 0, l = monkeys.length; i < l; i ++ ) {
-				if ( monkeys[i].available ) {
-					return monkeys[i];
+			var deferred = $.Deferred(),
+				monkey = false;
+
+			/**
+			 * Loop through our worker threads and grab the first available monkey.
+			 *
+			 * If no monkeys are available, set a short timeout (1ms) and check again.
+			 *
+			 * @param {$.Deferred} d
+			 */
+			function resolver( d ) {
+				for ( var i = 0, l = monkeys.length; i < l; i ++ ) {
+					if ( monkeys[i].available ) {
+						d.resolve( [ monkeys[i] ] );
+						return;
+					}
 				}
+
+				window.setTimeout( function() {
+					resolver( d );
+				}, 1 );
 			}
 
-			return false;
+			resolver( deferred );
+
+			return deferred.promise();
 		}
 
 		/**

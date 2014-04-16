@@ -10,6 +10,11 @@
 		var SELF = this,
 			fitness;
 
+		/**
+		 * Calculate the fitness of a single genome string by cacluating its total distance from the target genome.
+		 *
+		 * Lower numbers are considered "more fit."
+		 */
 		function recomputeFitness() {
 			if ( null !== text && null !== targetText ) {
 				var diffs = 0;

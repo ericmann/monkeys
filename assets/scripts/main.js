@@ -5,6 +5,7 @@
  */
 ( function( window, $, undefined ) {
 	var document = window.document,
+		Shakespeare = window.Shakespeare,
 		$document = $( document ),
 
 		// UI elements
@@ -25,13 +26,8 @@
 			+ 'And by opposing, end them.',
 
 		// Variables used by the iterative processor
-		iteration = 1,
-		lastUpdate = 0,
-		interval = null,
-		update = undefined,
-		genetics = null,
-		startTime = null,
-		bestGenome = null;
+		queue = null,
+		runner = null;
 
 	/**
 	 * Update the UI with the current process of the operation.
@@ -58,6 +54,28 @@
 		// Swap button states
 		$cancelbtn.removeAttr( 'disabled' );
 		$startbtn.attr( 'disabled', 'disabled' );
+
+		// Instantiate the task runner and populate it with an initial set of 200
+		runner = new Shakespeare.ZooKeeper();
+		runner.populate( text, 200 );
+
+		// Display the status
+		$status.text( 'Working...' );
+		$target.val( text );
+
+		// Start running the task
+		queue = runner.run();
+
+		// Update progress
+		queue.progress( function( data ) {
+			updateProgress( data.best, data.generation, data.generation_rate );
+		} );
+
+		// On complete
+		queue.done( function( data ) {
+			updateProgress( data.best, data.generation, data.generation_rate );
+			stopTyping();
+		} );
 	}
 
 	/**
@@ -67,6 +85,12 @@
 		// Swap button states
 		$startbtn.removeAttr( 'disabled' );
 		$cancelbtn.attr( 'disabled', 'disabled' );
+
+		if ( null !== runner ) {
+			runner.cleanup();
+			runner = null;
+			queue = null;
+		}
 	}
 
 	// Set the value of our "target" textbox to the be Shakespeare quote above.
