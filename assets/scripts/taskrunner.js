@@ -1,4 +1,4 @@
-var workers = []
+var workers = [],
 	new_population = [];
 
 onmessage = function( event ) {
@@ -25,7 +25,7 @@ onmessage = function( event ) {
  */
 function initialize() {
 	for ( var i = 0; i < 3; i++ ) {
-		workers.push( new window.Worker( 'worker.js' ) );
+		workers.push( new Worker( 'worker.js' ) );
 	}
 }
 
@@ -35,7 +35,7 @@ function initialize() {
 function cleanup() {
 	// Instruct our workers to exit
 	for ( var i = 0, l = workers.length; i < l; i++ ) {
-		workers[ i ].postMessage( window.JSON.stringify( { 'method': 'cleanup' } ) );
+		workers[ i ].postMessage( JSON.stringify( { 'method': 'cleanup' } ) );
 	}
 
 	// Close out the worker.
@@ -46,40 +46,41 @@ function cleanup() {
  * Actually run our task given an initial population.
  */
 function run( initial, count ) {
-	runNext( initial, count );
-}
-
-function runNext( initial, count ) {
 	var promises = [];
 
-	for( var i = 0, l = workers.length; i < l; i++ ) {
-		promises.push( new Promise( function ( resolve, reject ) {
-			var worker = workers[ i ];
+	for ( var i = 0, l = workers.length; i < l; i++ ) {
+		// Build a primitive promise object to wrap our worker.  Each worker will keep iteratively calling itself until
+		// we've built up a new population the same size (or larger) as the requested one.
+		var promise = (function( worker ) {
+			return new Promise( function( resolve, reject ) {
+				// Set the worker's onmessage handler manually to prevent any overlap
+				worker.onmessage = function( event ) {
+					var data = JSON.parse( event.data );
 
-			worker.onmessage = null;
+					// Combine our arrays to make sure the the new population is built up out of generated children
+					new_population = new_population.concat( data.children );
 
-			worker.postMessage( window.JSON.stringify( { 'method': 'spawn', 'parents': initial } ) );
+					if ( new_population.length >= count ) {
+						// If we've built a sufficient population, then resolve the worker's promise
+						resolve();
+					} else {
+						// If we still need children, then iterate again.
+						worker.postMessage( JSON.stringify( { 'method': 'spawn', 'parents': initial } ) );
+					}
+				};
 
-			worker.onmessage = function ( event ) {
-				var data = JSON.parse( event.data );
+				// Kick off an initial iteration for the worker.
+				worker.postMessage( JSON.stringify( { 'method': 'spawn', 'parents': initial } ) );
+			} );
+		} )( workers[i] );
 
-				resolve( data.children );
-			}
-		} ) );
+		// Collect all of our promises together
+		promises.push( promise );
 	}
 
-	Promise.all( promises ).then( function( values ) {
-		for( var i = 0, l = values.length; i < l; i++ ) {
-			var value = values[ i ];
-			for ( var j = 0, k = value.length; j < k; j++ ) {
-				new_population.push( value[ j ] );
-			}
-		}
-
-		if ( new_population.length < count ) {
-			runNext( initial );
-		} else {
-			window.postMessage( window.JSON.stringify( { 'descendants': new_population } ) );
-		}
+	// When all of our worker promises complete, we want to return our new population to the parent container.
+	Promise.all( promises ).then( function() {
+		var population = new_population.slice( 0, count );
+		postMessage( JSON.stringify( { 'descendants': population } ) );
 	} );
 }
