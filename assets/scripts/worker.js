@@ -7,13 +7,12 @@ var probabilities = {
 	},
 	population = [],
 	maxFitness = 0,
-	sumOfMaxMinusFitness = 0
-_validChars = [];
+	sumOfMaxMinusFitness = 0,
+	_validChars = [];
 
-// Initialize valid characters
 _validChars[0] = String.fromCharCode( 10 );
 _validChars[1] = String.fromCharCode( 13 );
-for ( var i = 2, pos = 32; i < 97; i ++, pos ++ ) {
+for ( var i = 2, pos = 32; i < 93; i++, pos++ ) {
 	_validChars[ i ] = String.fromCharCode( pos );
 }
 
@@ -93,24 +92,6 @@ function random_parent() {
 	var random_index = Math.floor( Math.random() * population.length );
 
 	return population[ random_index ];
-
-	//return population[ Math.floor( Math.random() * population.length ) ];
-
-	// Initialize a random starting point
-	var val = Math.random() * sumOfMaxMinusFitness;
-	for ( var i = 0, l = population.length; i < l; i ++ ) {
-		var maxMinusFitness = maxFitness - population[i].fitness;
-		// If our test value is less than our element's fitness, then it's fit enough
-		if ( val < maxMinusFitness ) {
-			return population[i];
-		}
-
-		// Reduce our test value so we can be less picky about our random parent
-		val -= maxMinusFitness;
-	}
-
-	// If we've iterated through all in our population, then we can't possibly find a parent
-	throw 'Not to be, apparently.';
 }
 
 /**

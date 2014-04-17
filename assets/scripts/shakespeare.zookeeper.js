@@ -19,7 +19,7 @@
 		// Initialize valid characters
 		_validChars[0] = String.fromCharCode( 10 );
 		_validChars[1] = String.fromCharCode( 13 );
-		for ( var i = 2, pos = 32; i < 97; i++, pos++ ) {
+		for ( var i = 2, pos = 32; i < 93; i++, pos++ ) {
 			_validChars[ i ] = String.fromCharCode( pos );
 		}
 
@@ -38,8 +38,7 @@
 
 			// Create a random generation of monkeys over which we'll iterate
 			for ( var i = 0; i < count; i ++ ) {
-				var member = createRandomGenome( text );
-				_population.push( member );
+				_population.push( createRandomGenome( text ) );
 			}
 		}
 
@@ -79,6 +78,11 @@
 		function _next( deferred ) {
 			// Run a step and wait until it's complete.
 			_step().done( function( best ) {
+				if ( undefined === best ) {
+					deferred.reject();
+					return;
+				}
+
 				if ( 0 === best.fitness ) {
 					deferred.resolveWith( { 'generation': _generation, 'generation_rate': _rate, 'best': best.text } );
 				} else {
@@ -191,7 +195,7 @@
 		 *
 		 * @param {String} targetText
 		 *
-		 * @return {Shakespeare.Genome}
+		 * @return {window.Shakespeare.Genome}
 		 */
 		function createRandomGenome( targetText ) {
 			var genome = '';
@@ -200,7 +204,7 @@
 				genome += _validChars[ Math.floor( Math.random() * _validChars.length ) ];
 			}
 
-			return new Shakespeare.Genome( genome, targetText );
+			return new window.Shakespeare.Genome( genome, targetText );
 		}
 
 		/**
@@ -213,6 +217,5 @@
 		};
 	}
 
-	window.Shakespeare = window.Shakespeare || {};
 	window.Shakespeare.ZooKeeper = ZooKeeper;
 } )(this, jQuery );
