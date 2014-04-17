@@ -2,8 +2,8 @@
 importScripts( 'shakespeare.genome.js' );
 
 var probabilities = {
-		cross_over: 0.80,
-		mutation:   0.25
+		cross_over: 0.85,
+		mutation:   0.50
 	},
 	population = [],
 	maxFitness = 0,
