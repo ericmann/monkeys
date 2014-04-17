@@ -13,15 +13,7 @@
 			_rate = 0,
 			_start = 0,
 			_population = [],
-			_population_number = 0,
-			_validChars = [];
-
-		// Initialize valid characters
-		_validChars[0] = String.fromCharCode( 10 );
-		_validChars[1] = String.fromCharCode( 13 );
-		for ( var i = 2, pos = 32; i < 93; i++, pos++ ) {
-			_validChars[ i ] = String.fromCharCode( pos );
-		}
+			_population_number = 0;
 
 		/**
 		 * Create a random population.
@@ -167,13 +159,7 @@
 		 * @private
 		 */
 		function _genome_comparator( a, b ) {
-			if ( a.fitness < b.fitness ) {        // A is fitter than B
-				return -1;
-			} else if ( a.fitness > b.fitness ) { // B is fitter than A
-				return 1;
-			} else {                              // A and B are equal
-				return 0;
-			}
+			return a.fitness - b.fitness;
 		}
 
 		/**
@@ -198,10 +184,11 @@
 		 * @return {window.Shakespeare.Genome}
 		 */
 		function createRandomGenome( targetText ) {
-			var genome = '';
+			var genome = '',
+				length = targetText.length;
 
-			for( var i = 0, l = targetText.length; i < l; i++ ) {
-				genome += _validChars[ Math.floor( Math.random() * _validChars.length ) ];
+			while( length-- ) {
+				genome += String.fromCharCode( Math.floor( Math.random() * 255 ) );
 			}
 
 			return new window.Shakespeare.Genome( genome, targetText );

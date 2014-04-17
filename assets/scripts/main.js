@@ -56,7 +56,7 @@
 
 		// Instantiate the task runner and populate it with an initial set of 200
 		runner = new Shakespeare.ZooKeeper();
-		runner.populate( text, 500 );
+		runner.populate( text, 200 );
 
 		// Display the status
 		$status.text( 'Working...' );

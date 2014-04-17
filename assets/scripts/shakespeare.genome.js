@@ -20,11 +20,11 @@
 				var diffs = 0;
 				for ( var i = 0, l = targetText.length; i < l; i++ ) {
 					if ( targetText[i] !== text[i] ) {
-						diffs += 1;
+						diffs += (text.charCodeAt( i ) - targetText.charCodeAt( i )) * (text.charCodeAt( i ) - targetText.charCodeAt( i ));
 					}
-
-					fitness = diffs;
 				}
+
+				fitness = diffs;
 			} else {
 				fitness = Number.MAX_VALUE;
 			}

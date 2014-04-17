@@ -2,19 +2,12 @@
 importScripts( 'shakespeare.genome.js' );
 
 var probabilities = {
-		cross_over: 0.87,
-		mutation:   0.01
+		cross_over: 0.80,
+		mutation:   0.25
 	},
 	population = [],
 	maxFitness = 0,
-	sumOfMaxMinusFitness = 0,
-	_validChars = [];
-
-_validChars[0] = String.fromCharCode( 10 );
-_validChars[1] = String.fromCharCode( 13 );
-for ( var i = 2, pos = 32; i < 93; i++, pos++ ) {
-	_validChars[ i ] = String.fromCharCode( pos );
-}
+	sumOfMaxMinusFitness = 0;
 
 onmessage = function ( event ) {
 	var data = JSON.parse( event.data );
@@ -101,10 +94,22 @@ function random_parent() {
  * @returns {Shakespeare.Genome}
  */
 function mutate( child ) {
-	var text = child.text;
+	var text = child.text,
+		index = Math.floor( Math.random() * text.length ),
+		upOrDown = Math.random() <= 0.5 ? - 1 : 1,
+		newChar = String.fromCharCode( text.charCodeAt( index ) + upOrDown ),
+		newString = '';
 
-	text[ Math.floor( Math.random() * text.length ) ] = _validChars[ Math.floor( Math.random() * _validChars.length ) ];
-	child.text = text;
+	for ( i = 0; i < text.length; i ++ ) {
+		if ( i == index ) {
+			newString += newChar;
+		}
+		else {
+			newString += text[i];
+		}
+	}
+
+	child.text = newString;
 
 	return child;
 }
