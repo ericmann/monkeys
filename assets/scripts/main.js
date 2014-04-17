@@ -16,7 +16,6 @@
 		$status = $( document.getElementById( 'status' ) ),
 		$startbtn = $( document.getElementById( 'startbutton' ) ),
 		$cancelbtn = $( document.getElementById( 'cancelbutton' ) ),
-		$useWorkers = $( document.getElementById( 'useworkers' ) ),
 
 		// Initial target text that our monkeys will attempt to type
 		shakespeare = 'To be or not to be, that is the question;\n'
@@ -85,12 +84,6 @@
 		// Swap button states
 		$startbtn.removeAttr( 'disabled' );
 		$cancelbtn.attr( 'disabled', 'disabled' );
-
-		if ( null !== runner ) {
-			runner.cleanup();
-			runner = null;
-			queue = null;
-		}
 	}
 
 	// Set the value of our "target" textbox to the be Shakespeare quote above.
@@ -104,6 +97,12 @@
 
 	// Wire up cancel button click events.
 	$cancelbtn.on( 'click', function( event ) {
+		$status.text( 'Cancelled ...' );
+
+		runner.cleanup();
+		runner = null;
+		queue = null;
+
 		stopTyping();
 	} );
 } )( window, jQuery );

@@ -9,7 +9,7 @@
 	 */
 	function ZooKeeper() {
 		var _workers = [],
-			_generation = 0,
+			_generation = 1,
 			_rate = 0,
 			_start = 0,
 			_population = [],
@@ -52,7 +52,9 @@
 		function run() {
 			var deferred = $.Deferred();
 
-			// Set up our start time
+			// Set up our initial environment
+			_generation = 1;
+			_rate = 0;
 			_start = Math.floor( Date.now() / 1000 );
 
 			// Set up workers if they don't exist
@@ -175,17 +177,13 @@
 		 */
 		function cleanup() {
 			// Instruct our workers to exit
-			for ( var i = 0, l = workers.length; i < l; i++ ) {
-				workers[ i ].postMessage( JSON.stringify( { 'method': 'cleanup' } ) );
+			for ( var i = 0, l = _workers.length; i < l; i++ ) {
+				_workers[ i ].postMessage( JSON.stringify( { 'method': 'cleanup' } ) );
 			}
 
 			// Reset the population
-			workers = [];
+			_workers = [];
 			_population = [];
-			_descendants = [];
-			_generation = 0;
-			_rate = 0;
-			_start = 0;
 		}
 
 		/**
