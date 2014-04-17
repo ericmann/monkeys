@@ -56,7 +56,7 @@
 
 		// Instantiate the task runner and populate it with an initial set of 200
 		runner = new Shakespeare.ZooKeeper();
-		runner.populate( text, 1000 );
+		runner.populate( text, 200 );
 
 		// Display the status
 		$status.text( 'Working...' );
@@ -71,8 +71,15 @@
 		} );
 
 		// On complete
-		queue.done( function( data ) {
-			updateProgress( data.best, data.generation, data.generation_rate );
+		queue.done( function() {
+			updateProgress( this.best, this.generation, this.generation_rate );
+
+			$status.text( 'Finished!' );
+
+			runner.cleanup();
+			runner = null;
+			queue = null;
+
 			stopTyping();
 		} );
 	}

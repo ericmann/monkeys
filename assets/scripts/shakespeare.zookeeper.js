@@ -143,16 +143,16 @@
 		}
 
 		/**
-		 * Select just the top 10% of the population for breeding.
+		 * Select just the top half of the population for breeding.
 		 *
 		 * @private
 		 *
 		 * @return {Array}
 		 */
 		function _front_runners() {
-			var length = Math.ceil( _population.length / 10 );
+			_population.sort( _genome_comparator );
 
-			return _population.slice( 0, length );
+			return _population.slice( 0, ( Math.ceil( _population.length / 2 ) ) );
 		}
 
 		/**
